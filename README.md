@@ -1,3 +1,3 @@
 # currency_converter
 
-Implements Uncle Bob's clean architecture pattern
+Implements (Robert C. Martin) Uncle Bob's clean architecture pattern
