@@ -18,13 +18,13 @@ import java.util.List;
  * Created by rgohel on 2017-03-25.
  */
 
-public class CurrencyRecyclerViewAdapter extends RecyclerView.Adapter<CurrencyRecyclerViewAdapter.CurrencyViewHolder> {
+public class AdapterCurrencyRecyclerView extends RecyclerView.Adapter<AdapterCurrencyRecyclerView.CurrencyViewHolder> {
     private List<CurrencyItem> mCurrencyItemList;
     private double             mBaseRate;
     private double             mUserInputValue;
     private DecimalFormat      mDecimalFormat;
 
-    public CurrencyRecyclerViewAdapter() {
+    public AdapterCurrencyRecyclerView() {
         mCurrencyItemList = new ArrayList<>();
         mDecimalFormat = new DecimalFormat("#.####");
         mDecimalFormat.setRoundingMode(RoundingMode.CEILING);
