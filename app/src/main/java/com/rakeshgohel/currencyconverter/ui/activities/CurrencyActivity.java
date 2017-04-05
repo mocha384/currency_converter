@@ -27,7 +27,7 @@ import com.rakeshgohel.currencyconverter.presenters.CurrencyActivityPresenterImp
 import com.rakeshgohel.currencyconverter.ui.recycler.CurrencyRecyclerViewAdapter;
 import com.rakeshgohel.currencyconverter.ui.views.CurrencyConverterView;
 import com.rakeshgohel.currencyconverter.utils.AlarmReceiver;
-import com.rakeshgohel.currencyconverter.utils.DecimalDigitsInputFilter;
+import com.rakeshgohel.currencyconverter.utils.RegexInputFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,8 @@ public class CurrencyActivity extends AppCompatActivity implements CurrencyConve
         mSpinnerCurrencyType    = (Spinner)      findViewById(R.id.activity_currency_spinner_currency_type);
         mRecyclerViewCurrencies = (RecyclerView) findViewById(R.id.activity_currency_recyclerview_currency_list);
 
-        mEditTextNumber.setFilters(new InputFilter[] {new DecimalDigitsInputFilter(8,2)});
+
+        mEditTextNumber.setFilters(new InputFilter[] {new RegexInputFilter("[0-9]{0,8}+((\\.[0-9]{0,2})?)||(\\.)?")});
         mEditTextNumber.setText("1.00");
         mEditTextNumber.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
