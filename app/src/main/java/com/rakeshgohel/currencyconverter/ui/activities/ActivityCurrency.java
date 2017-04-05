@@ -22,10 +22,10 @@ import android.widget.TextView;
 
 import com.rakeshgohel.currencyconverter.R;
 import com.rakeshgohel.currencyconverter.models.Currency;
-import com.rakeshgohel.currencyconverter.presenters.CurrencyActivityPresenter;
-import com.rakeshgohel.currencyconverter.presenters.CurrencyActivityPresenterImpl;
-import com.rakeshgohel.currencyconverter.ui.recycler.CurrencyRecyclerViewAdapter;
-import com.rakeshgohel.currencyconverter.ui.views.CurrencyConverterView;
+import com.rakeshgohel.currencyconverter.presenters.PresenterCurrencyActivity;
+import com.rakeshgohel.currencyconverter.presenters.PresenterCurrencyActivityImpl;
+import com.rakeshgohel.currencyconverter.ui.recycler.AdapterCurrencyRecyclerView;
+import com.rakeshgohel.currencyconverter.ui.views.ViewCurrencyConverter;
 import com.rakeshgohel.currencyconverter.utils.AlarmReceiver;
 import com.rakeshgohel.currencyconverter.utils.RegexInputFilter;
 
@@ -35,18 +35,18 @@ import java.util.List;
 /**
  * Created by rgohel on 2017-03-25.
  */
-public class CurrencyActivity extends AppCompatActivity implements CurrencyConverterView {
+public class ActivityCurrency extends AppCompatActivity implements ViewCurrencyConverter {
 
-    private static final String TAG = CurrencyActivity.class.getSimpleName();
+    private static final String TAG = ActivityCurrency.class.getSimpleName();
 
     private EditText                    mEditTextNumber;
     private Spinner                     mSpinnerCurrencyType;
     private RecyclerView                mRecyclerViewCurrencies;
-    private CurrencyRecyclerViewAdapter mCurrencyAdapter;
-    private ArrayAdapter<String>        mCurrencyTypeAdapter;
-    private CurrencyActivityPresenter   mCurrencyActivityPresenter;
-    private List<String>                mCurrencyTypeList;
-    private List<Currency>              mCurrencies;
+    private AdapterCurrencyRecyclerView mAdapterCurrency;
+    private ArrayAdapter<String>        mAdapterCurrencyType;
+    private PresenterCurrencyActivity   mPresenterCurrencyActivity;
+    private List<String>                mListCurrencyType;
+    private List<Currency>              mListCurrency;
     private TextView                    mTextViewLastUpdated;
     private PendingIntent               mPendingIntent;
     private AlarmManager                mAlarmManager;
@@ -80,13 +80,13 @@ public class CurrencyActivity extends AppCompatActivity implements CurrencyConve
         mRecyclerViewCurrencies.setLayoutManager(layoutManager);
         mRecyclerViewCurrencies.setItemAnimator(new DefaultItemAnimator());
 
-        mCurrencyAdapter = new CurrencyRecyclerViewAdapter();
-        mRecyclerViewCurrencies.setAdapter(mCurrencyAdapter);
+        mAdapterCurrency = new AdapterCurrencyRecyclerView();
+        mRecyclerViewCurrencies.setAdapter(mAdapterCurrency);
 
-        mCurrencyTypeList = new ArrayList<>();
-        mCurrencyTypeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, mCurrencyTypeList);
-        mCurrencyTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerCurrencyType.setAdapter(mCurrencyTypeAdapter);
+        mListCurrencyType = new ArrayList<>();
+        mAdapterCurrencyType = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, mListCurrencyType);
+        mAdapterCurrencyType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerCurrencyType.setAdapter(mAdapterCurrencyType);
 
         mSpinnerCurrencyType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -102,10 +102,10 @@ public class CurrencyActivity extends AppCompatActivity implements CurrencyConve
 
         mTextViewLastUpdated = (TextView) findViewById(R.id.activity_currency_textview_last_updated);
 
-        mAlarmManager = (AlarmManager) CurrencyActivity.this.getSystemService(Context.ALARM_SERVICE);
+        mAlarmManager = (AlarmManager) ActivityCurrency.this.getSystemService(Context.ALARM_SERVICE);
 
-        mCurrencyActivityPresenter = new CurrencyActivityPresenterImpl(this);
-        mCurrencyActivityPresenter.create();
+        mPresenterCurrencyActivity = new PresenterCurrencyActivityImpl(this);
+        mPresenterCurrencyActivity.create();
     }
 
     @Override
@@ -114,41 +114,41 @@ public class CurrencyActivity extends AppCompatActivity implements CurrencyConve
         if (mPendingIntent != null) {
             mAlarmManager.cancel(mPendingIntent);
         }
-        mCurrencyActivityPresenter.pause();
+        mPresenterCurrencyActivity.pause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mCurrencyActivityPresenter.resume();
+        mPresenterCurrencyActivity.resume();
     }
 
     @Override
     public void setCurrencyTypes(List<String> currencyTypeList) {
-        if (mCurrencyTypeAdapter != null) {
-            mCurrencyTypeAdapter.clear();
-            mCurrencyTypeAdapter.addAll(currencyTypeList);
-            mCurrencyTypeList = currencyTypeList;
+        if (mAdapterCurrencyType != null) {
+            mAdapterCurrencyType.clear();
+            mAdapterCurrencyType.addAll(currencyTypeList);
+            mListCurrencyType = currencyTypeList;
         }
     }
 
     @Override
     public void setCurrencies(List<Currency> currencies) {
-        if (mCurrencyAdapter != null) {
-            mCurrencies = currencies;
+        if (mAdapterCurrency != null) {
+            mListCurrency = currencies;
             setCurrenciesInAdapter();
         }
     }
 
     @Override
-    public void setLastUpdated(String time) {
-        mTextViewLastUpdated.setText(getString(R.string.market_update) + time);
+    public void setLastUpdated(String timeFormatted) {
+        mTextViewLastUpdated.setText(getString(R.string.market_update) + timeFormatted);
     }
 
     @Override
     public void scheduleMarketRateUpdate(long alarmTime) {
-        Intent alarmIntent = new Intent(CurrencyActivity.this, AlarmReceiver.class);
-        mPendingIntent = PendingIntent.getBroadcast(CurrencyActivity.this, 0, alarmIntent, 0);
+        Intent alarmIntent = new Intent(ActivityCurrency.this, AlarmReceiver.class);
+        mPendingIntent = PendingIntent.getBroadcast(ActivityCurrency.this, 0, alarmIntent, 0);
 
         mAlarmManager.setExact(AlarmManager.RTC, alarmTime, mPendingIntent);
     }
@@ -158,12 +158,12 @@ public class CurrencyActivity extends AppCompatActivity implements CurrencyConve
         Double userInputValue = userInput.isEmpty()? 1.0 : Double.parseDouble(userInput);
         String selectedSpinnerItem = String.valueOf(mSpinnerCurrencyType.getSelectedItem());
         Double baseRate = 1.0;
-        for (Currency currency : mCurrencies) {
+        for (Currency currency : mListCurrency) {
             if (currency.getName().compareTo(selectedSpinnerItem) == 0) {
                 baseRate = currency.getValue();
                 break;
             }
         }
-        mCurrencyAdapter.setItems(userInputValue, baseRate, mCurrencies);
+        mAdapterCurrency.setItems(userInputValue, baseRate, mListCurrency);
     }
 }

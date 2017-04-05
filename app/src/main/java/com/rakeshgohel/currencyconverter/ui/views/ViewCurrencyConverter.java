@@ -8,9 +8,9 @@ import java.util.List;
  * Created by rgohel on 2017-03-25.
  */
 
-public interface CurrencyConverterView {
+public interface ViewCurrencyConverter {
     void setCurrencyTypes(List<String> currencyTypes);
     void setCurrencies(List<Currency> currencies);
-    void setLastUpdated(String time);
+    void setLastUpdated(String timeFormatted);
     void scheduleMarketRateUpdate(long alarmTime);
 }

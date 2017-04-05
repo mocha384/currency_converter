@@ -12,7 +12,7 @@ import com.rakeshgohel.currencyconverter.interactors.GetRemoteCurrenciesImpl;
 import com.rakeshgohel.currencyconverter.interactors.SetCurrencies;
 import com.rakeshgohel.currencyconverter.interactors.SetLocalCurrenciesImpl;
 import com.rakeshgohel.currencyconverter.models.Currency;
-import com.rakeshgohel.currencyconverter.ui.views.CurrencyConverterView;
+import com.rakeshgohel.currencyconverter.ui.views.ViewCurrencyConverter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,22 +25,22 @@ import de.greenrobot.event.EventBus;
  * Created by rgohel on 2017-03-25.
  */
 
-public class CurrencyActivityPresenterImpl implements CurrencyActivityPresenter {
-    private static final String TAG = CurrencyActivityPresenterImpl.class.getSimpleName();
+public class PresenterCurrencyActivityImpl implements PresenterCurrencyActivity {
+    private static final String TAG = PresenterCurrencyActivityImpl.class.getSimpleName();
 
-    private CurrencyConverterView   mCurrencyConverterView;
+    private ViewCurrencyConverter mViewCurrencyConverter;
     private final GetCurrencies     mGetLocalCurrencies;
     private final GetCurrencies     mGetRemoteCurrencies;
     private final SetCurrencies     mSetLocalCurrencies;
 
     private List<Currency>          mCurrencyList;
 
-    public CurrencyActivityPresenterImpl(CurrencyConverterView view) {
+    public PresenterCurrencyActivityImpl(ViewCurrencyConverter view) {
         this(view, new GetLocalCurrenciesImpl(), new GetRemoteCurrenciesImpl(), new SetLocalCurrenciesImpl());
     }
 
-    CurrencyActivityPresenterImpl(CurrencyConverterView currencyConverterView, GetCurrencies useCaseLocal, GetCurrencies useCaseRemote, SetCurrencies useCaseSetLocal) {
-        mCurrencyConverterView = currencyConverterView;
+    PresenterCurrencyActivityImpl(ViewCurrencyConverter viewCurrencyConverter, GetCurrencies useCaseLocal, GetCurrencies useCaseRemote, SetCurrencies useCaseSetLocal) {
+        mViewCurrencyConverter = viewCurrencyConverter;
         mGetLocalCurrencies = useCaseLocal;
         mGetRemoteCurrencies = useCaseRemote;
         mSetLocalCurrencies = useCaseSetLocal;
@@ -76,7 +76,7 @@ public class CurrencyActivityPresenterImpl implements CurrencyActivityPresenter 
             public void onFailure(Throwable error) {
                 Log.d(TAG, "onFailure");
                 error.printStackTrace();
-                mCurrencyConverterView.scheduleMarketRateUpdate(System.currentTimeMillis()+Config.UPDATE_MARTE_RATE_FAILURE_INTERNAL);
+                mViewCurrencyConverter.scheduleMarketRateUpdate(System.currentTimeMillis()+Config.UPDATE_MARTE_RATE_FAILURE_INTERNAL);
             }
         });
     }
@@ -86,16 +86,16 @@ public class CurrencyActivityPresenterImpl implements CurrencyActivityPresenter 
         long now = System.currentTimeMillis();
 
         if (now < updateTime) {
-            mCurrencyConverterView.scheduleMarketRateUpdate(updateTime);
+            mViewCurrencyConverter.scheduleMarketRateUpdate(updateTime);
         } else {
-            mCurrencyConverterView.scheduleMarketRateUpdate(now);
+            mViewCurrencyConverter.scheduleMarketRateUpdate(now);
         }
     }
 
     private void updateMarketRatesTime() {
         Date date = new Date(Config.getLastUpdatedTime());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        mCurrencyConverterView.setLastUpdated(sdf.format(date));
+        mViewCurrencyConverter.setLastUpdated(sdf.format(date));
     }
 
     private void loadLocalData() {
@@ -108,8 +108,8 @@ public class CurrencyActivityPresenterImpl implements CurrencyActivityPresenter 
                 for (Currency currency : list) {
                     currencyTypes.add(currency.getName());
                 }
-                mCurrencyConverterView.setCurrencyTypes(currencyTypes);
-                mCurrencyConverterView.setCurrencies(mCurrencyList);
+                mViewCurrencyConverter.setCurrencyTypes(currencyTypes);
+                mViewCurrencyConverter.setCurrencies(mCurrencyList);
                 updateMarketRatesTime();
             }
 
